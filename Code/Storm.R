@@ -15,8 +15,6 @@ Storm_dat <-
   read.csv('Raw_Data/StormData.csv')
 
 # Wrangling  
-## Taking only ye
-
 Wrangled_Data <-
     Storm_dat %>%  
       select(EVTYPE, BGN_DATE, INJURIES, FATALITIES, PROPDMG, PROPDMGEXP, 
@@ -32,28 +30,109 @@ Wrangled_Data <-
              CROPDMG = CROPDMG*CROPDMGEXP,
              TOTAL_ECONOMICAL_LOSTS = CROPDMG+PROPDMG
              )  %>% 
-      filter(year(BGN_DATE) %in% 2007:2011) 
+      filter(year(BGN_DATE) %in% 2010:2011) 
+
 # Plotting
 ## COSTS
 ### CROPS
-Wrangled_Data %>% 
-  mutate(EVTYPE = reorder(EVTYPE, PROPDMG, sum)) %>%
-    ggplot(aes(y =EVTYPE, x= PROPDMG)) + 
-       geom_bar(stat="identity", fill = 'darkred') + 
-          ylab('') + xlab('') + 
-          ggtitle('ECONOMICAL LOSTS IN PROPERTIES (USD) PER EVENT')
-### CROPS
-Wrangled_Data %>% 
-  mutate(EVTYPE = reorder(EVTYPE, CROPDMG, sum)) %>%
-    ggplot(aes(y =EVTYPE, x= CROPDMG)) + 
-      geom_bar(stat="identity", fill = 'darkred') + 
-        ylab('') + xlab('') + 
-        ggtitle('ECONOMICAL LOSTS IN CROPS (USD) PER EVENT')
+Crops <-
+  Wrangled_Data %>% 
+    group_by(EVTYPE) %>%
+    summarise(SUM = sum(CROPDMG), MEAN = mean(CROPDMG)) 
 
-### TOTAL
-Wrangled_Data %>% 
-  mutate(EVTYPE = reorder(EVTYPE, TOTAL_ECONOMICAL_LOSTS, sum)) %>%
-    ggplot(aes(y =EVTYPE, x= TOTAL_ECONOMICAL_LOSTS)) + 
-       geom_bar(stat="identity", fill = 'darkred') + 
-           ylab('') + xlab('') + 
-           ggtitle('TOTAL ECONOMICAL LOSTS (USD) PER EVENT')
+Crops %>%
+  mutate(EVTYPE = reorder(EVTYPE, SUM, sum)) %>%  
+  arrange(desc(SUM)) %>%
+  slice(1:10) %>%
+      ggplot(aes(y =EVTYPE, x= SUM)) +
+        geom_bar(stat = 'identity', fill = 'darkred') +
+          ylab('') + xlab('') + 
+          ggtitle('ECONOMICAL CROPS LOSTS (USD) BY EVENT')
+
+## PROPERTIES
+Property <-
+  Wrangled_Data %>% 
+    group_by(EVTYPE) %>%
+    summarise(SUM = sum(PROPDMG), MEAN = mean(PROPDMG)) 
+
+Property %>%
+  mutate(EVTYPE = reorder(EVTYPE, SUM, sum)) %>%  
+  arrange(desc(SUM)) %>%
+  slice(1:10) %>%
+      ggplot(aes(y =EVTYPE, x= SUM)) +
+        geom_bar(stat = 'identity', fill = 'darkred') +
+            ylab('') + xlab('') + 
+            ggtitle('ECONOMICAL PROPERTIES LOSTS (USD) BY EVENT')
+
+## TOTAL
+Total <-
+  Wrangled_Data %>% 
+    group_by(EVTYPE) %>%
+    summarise(SUM = sum(TOTAL_ECONOMICAL_LOSTS), 
+              MEAN = mean(TOTAL_ECONOMICAL_LOSTS)) 
+
+Total %>%
+  mutate(EVTYPE = reorder(EVTYPE, SUM, sum)) %>%  
+  arrange(desc(SUM)) %>%
+  slice(1:10) %>%
+    ggplot(aes(y =EVTYPE, x= SUM)) +
+      geom_bar(stat = 'identity', fill = 'darkred') +
+      ylab('') + xlab('') + 
+      ggtitle('TOTAL ECONOMICAL LOSTS (USD) BY EVENT')
+
+## MEAN
+Crops %>%
+  mutate(EVTYPE = reorder(EVTYPE, SUM, sum)) %>%  
+  arrange(desc(MEAN)) %>%
+  slice(1:10) %>%
+      ggplot(aes(y =EVTYPE, x= MEAN)) +
+        geom_bar(stat = 'identity', fill = 'darkred') +
+          ylab('') + xlab('') + 
+          ggtitle('AVERAGE ECONOMICAL CROPS LOSTS (USD) PER EVENT')
+
+Property %>%
+  mutate(EVTYPE = reorder(EVTYPE, SUM, sum)) %>%  
+  arrange(desc(MEAN)) %>%
+  slice(1:10) %>%
+    ggplot(aes(y =EVTYPE, x= MEAN)) +
+      geom_bar(stat = 'identity', fill = 'darkred') +
+        ylab('') + xlab('') + 
+        ggtitle('AVERAGE ECONOMICAL PROPERTIES LOSTS (USD) PER EVENT')
+
+Total %>%
+  mutate(EVTYPE = reorder(EVTYPE, SUM, sum)) %>%  
+  arrange(desc(MEAN)) %>%
+  slice(1:10) %>%
+    ggplot(aes(y =EVTYPE, x= MEAN)) +
+      geom_bar(stat = 'identity', fill = 'darkred') +
+        ylab('') + xlab('') + 
+        ggtitle('AVERAGE TOTAL ECONOMICAL LOSTS (USD) PER EVENT')
+## HEALTH
+### FATALITIES
+Fatalities <-
+  Wrangled_Data %>% 
+    group_by(EVTYPE) %>%
+    summarise(SUM = sum(FATALITIES), MEAN = mean(FATALITIES)) 
+
+Fatalities %>%
+  mutate(EVTYPE = reorder(EVTYPE, SUM, sum)) %>%  
+  arrange(desc(SUM)) %>%
+  slice(1:10) %>%
+    ggplot(aes(y =EVTYPE, x= SUM)) +
+      geom_bar(stat = 'identity', fill = 'darkred') +
+      ylab('') + xlab('') + 
+      ggtitle('DEATHS BY EVENT')
+
+Injuries <-
+  Wrangled_Data %>% 
+  group_by(EVTYPE) %>%
+  summarise(SUM = sum(INJURIES), MEAN = mean(INJURIES)) 
+
+Injuries %>%
+  mutate(EVTYPE = reorder(EVTYPE, SUM, sum)) %>%  
+  arrange(desc(SUM)) %>%
+  slice(1:10) %>%
+    ggplot(aes(y =EVTYPE, x= SUM)) +
+      geom_bar(stat = 'identity', fill = 'darkred') +
+        ylab('') + xlab('') + 
+        ggtitle('INJUREDS BY EVENT')
