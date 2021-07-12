@@ -19,7 +19,7 @@ Wrangled_Data <-
     Storm_dat %>%  
       select(EVTYPE, BGN_DATE, INJURIES, FATALITIES, PROPDMG, PROPDMGEXP, 
              CROPDMG, CROPDMGEXP) %>%
-      mutate(BGN_DATE = dmy_hms(BGN_DATE),
+      mutate(Year = year(dmy_hms(BGN_DATE)),
              PROPDMGEXP = ifelse(PROPDMGEXP == 'K', 10^3, 
                                  ifelse(PROPDMGEXP == 'M', 10^6, 10^9)
                                  ),
@@ -30,8 +30,12 @@ Wrangled_Data <-
              CROPDMG = CROPDMG*CROPDMGEXP,
              TOTAL_ECONOMICAL_LOSTS = CROPDMG+PROPDMG
              )  %>% 
-      filter(year(BGN_DATE) %in% 2010:2011) 
+      filter(Year %in% 2010:2011) %>%
+      mutate(Year = as.factor(Year))
 
+save(Wrangled_Data,file = 'Rdat/Wrangled_Data.rda')
+
+Wrangled_Data$Year
 # Plotting
 ## COSTS
 ### CROPS
@@ -40,10 +44,13 @@ Crops <-
     group_by(EVTYPE) %>%
     summarise(SUM = sum(CROPDMG), MEAN = mean(CROPDMG)) 
 
-Crops %>%
+Greatest_crops_losts <-
+  Crops%>%
   mutate(EVTYPE = reorder(EVTYPE, SUM, sum)) %>%  
   arrange(desc(SUM)) %>%
-  slice(1:10) %>%
+  slice(1:10)
+
+Greatest_crops_losts%>%
       ggplot(aes(y =EVTYPE, x= SUM)) +
         geom_bar(stat = 'identity', fill = 'darkred') +
           ylab('') + xlab('') + 
