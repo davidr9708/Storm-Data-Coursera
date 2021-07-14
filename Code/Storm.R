@@ -35,7 +35,7 @@ Wrangled_Data <-
 
 save(Wrangled_Data,file = 'Rdat/Wrangled_Data.rda')
 
-Wrangled_Data$Year
+class(Wrangled_Data$Year)
 # Plotting
 ## COSTS
 ### CROPS
@@ -44,17 +44,14 @@ Crops <-
     group_by(EVTYPE) %>%
     summarise(SUM = sum(CROPDMG), MEAN = mean(CROPDMG)) 
 
-Greatest_crops_losts <-
-  Crops%>%
+Crops%>%
   mutate(EVTYPE = reorder(EVTYPE, SUM, sum)) %>%  
   arrange(desc(SUM)) %>%
-  slice(1:10)
-
-Greatest_crops_losts%>%
+  filter(SUM > 0) %>%
       ggplot(aes(y =EVTYPE, x= SUM)) +
-        geom_bar(stat = 'identity', fill = 'darkred') +
+        geom_point(color = 'darkred') +
           ylab('') + xlab('') + 
-          ggtitle('ECONOMICAL CROPS LOSTS (USD) BY EVENT')
+          ggtitle('ECONOMICAL CROPS LOSTS (USD) BY EVENT') + scale_x_log10()
 
 ## PROPERTIES
 Property <-
@@ -65,12 +62,11 @@ Property <-
 Property %>%
   mutate(EVTYPE = reorder(EVTYPE, SUM, sum)) %>%  
   arrange(desc(SUM)) %>%
-  slice(1:10) %>%
+  filter(SUM > 0) %>%
       ggplot(aes(y =EVTYPE, x= SUM)) +
-        geom_bar(stat = 'identity', fill = 'darkred') +
+        geom_point(color = 'darkred') +
             ylab('') + xlab('') + 
-            ggtitle('ECONOMICAL PROPERTIES LOSTS (USD) BY EVENT')
-
+            ggtitle('ECONOMICAL PROPERTIES LOSTS (USD) BY EVENT') + scale_x_log10()
 ## TOTAL
 Total <-
   Wrangled_Data %>% 
@@ -80,40 +76,13 @@ Total <-
 
 Total %>%
   mutate(EVTYPE = reorder(EVTYPE, SUM, sum)) %>%  
-  arrange(desc(SUM)) %>%
-  slice(1:10) %>%
+  arrange(desc(SUM))  %>%
+  filter(SUM > 0) %>%
     ggplot(aes(y =EVTYPE, x= SUM)) +
-      geom_bar(stat = 'identity', fill = 'darkred') +
+      geom_point(color = 'darkred') +
       ylab('') + xlab('') + 
-      ggtitle('TOTAL ECONOMICAL LOSTS (USD) BY EVENT')
+      ggtitle('TOTAL ECONOMICAL LOSTS (USD) BY EVENT') + scale_x_log10()
 
-## MEAN
-Crops %>%
-  mutate(EVTYPE = reorder(EVTYPE, SUM, sum)) %>%  
-  arrange(desc(MEAN)) %>%
-  slice(1:10) %>%
-      ggplot(aes(y =EVTYPE, x= MEAN)) +
-        geom_bar(stat = 'identity', fill = 'darkred') +
-          ylab('') + xlab('') + 
-          ggtitle('AVERAGE ECONOMICAL CROPS LOSTS (USD) PER EVENT')
-
-Property %>%
-  mutate(EVTYPE = reorder(EVTYPE, SUM, sum)) %>%  
-  arrange(desc(MEAN)) %>%
-  slice(1:10) %>%
-    ggplot(aes(y =EVTYPE, x= MEAN)) +
-      geom_bar(stat = 'identity', fill = 'darkred') +
-        ylab('') + xlab('') + 
-        ggtitle('AVERAGE ECONOMICAL PROPERTIES LOSTS (USD) PER EVENT')
-
-Total %>%
-  mutate(EVTYPE = reorder(EVTYPE, SUM, sum)) %>%  
-  arrange(desc(MEAN)) %>%
-  slice(1:10) %>%
-    ggplot(aes(y =EVTYPE, x= MEAN)) +
-      geom_bar(stat = 'identity', fill = 'darkred') +
-        ylab('') + xlab('') + 
-        ggtitle('AVERAGE TOTAL ECONOMICAL LOSTS (USD) PER EVENT')
 ## HEALTH
 ### FATALITIES
 Fatalities <-
@@ -124,11 +93,11 @@ Fatalities <-
 Fatalities %>%
   mutate(EVTYPE = reorder(EVTYPE, SUM, sum)) %>%  
   arrange(desc(SUM)) %>%
-  slice(1:10) %>%
+  filter(SUM > 0) %>%
     ggplot(aes(y =EVTYPE, x= SUM)) +
-      geom_bar(stat = 'identity', fill = 'darkred') +
+      geom_point(color = 'darkred') +
       ylab('') + xlab('') + 
-      ggtitle('DEATHS BY EVENT')
+      ggtitle('DEATHS BY EVENT') 
 
 Injuries <-
   Wrangled_Data %>% 
@@ -138,8 +107,8 @@ Injuries <-
 Injuries %>%
   mutate(EVTYPE = reorder(EVTYPE, SUM, sum)) %>%  
   arrange(desc(SUM)) %>%
-  slice(1:10) %>%
+  filter(SUM > 0 ) %>%
     ggplot(aes(y =EVTYPE, x= SUM)) +
-      geom_bar(stat = 'identity', fill = 'darkred') +
+      geom_point(color = 'darkred') +
         ylab('') + xlab('') + 
-        ggtitle('INJUREDS BY EVENT')
+        ggtitle('INJUREDS BY EVENT') + scale_x_log10()
