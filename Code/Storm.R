@@ -2,6 +2,7 @@
 library(tidyverse)
 library(R.utils)
 library(lubridate)
+library(ggthemes)
 # File used
 ##Downloading 
 url <- 'https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2'
@@ -10,6 +11,7 @@ download.file(url, destfile = 'Raw_Data/StormData.csv.bz2')
 ## Decompressing
 bunzip2(filename = 'Raw_Data/StormData.csv.bz2', 
         destname = 'Raw_Data/StormData.csv', remove = FALSE, skip = TRUE) 
+
 ## Reading
 Storm_dat <- 
   read.csv('Raw_Data/StormData.csv')
@@ -30,12 +32,11 @@ Wrangled_Data <-
              CROPDMG = CROPDMG*CROPDMGEXP,
              TOTAL_ECONOMICAL_LOSTS = CROPDMG+PROPDMG
              )  %>% 
-      filter(Year %in% 2010:2011) %>%
+      filter(Year %in% 2007:2011) %>%
       mutate(Year = as.factor(Year))
 
 save(Wrangled_Data,file = 'Rdat/Wrangled_Data.rda')
 
-class(Wrangled_Data$Year)
 # Plotting
 ## COSTS
 ### CROPS
@@ -49,9 +50,12 @@ Crops%>%
   arrange(desc(SUM)) %>%
   filter(SUM > 0) %>%
       ggplot(aes(y =EVTYPE, x= SUM)) +
-        geom_point(color = 'darkred') +
-          ylab('') + xlab('') + 
-          ggtitle('ECONOMICAL CROPS LOSTS (USD) BY EVENT') + scale_x_log10()
+        geom_point(color = 'green4') +
+          ylab('') + xlab('log10(Dollars)') + 
+        labs(title = 'CROPS DAMAGE') + 
+      scale_x_log10()+
+  theme_update() 
+
 
 ## PROPERTIES
 Property <-
@@ -64,7 +68,7 @@ Property %>%
   arrange(desc(SUM)) %>%
   filter(SUM > 0) %>%
       ggplot(aes(y =EVTYPE, x= SUM)) +
-        geom_point(color = 'darkred') +
+        geom_point(color = 'tan4') +
             ylab('') + xlab('') + 
             ggtitle('ECONOMICAL PROPERTIES LOSTS (USD) BY EVENT') + scale_x_log10()
 ## TOTAL
@@ -80,8 +84,10 @@ Total %>%
   filter(SUM > 0) %>%
     ggplot(aes(y =EVTYPE, x= SUM)) +
       geom_point(color = 'darkred') +
-      ylab('') + xlab('') + 
-      ggtitle('TOTAL ECONOMICAL LOSTS (USD) BY EVENT') + scale_x_log10()
+      labs(title = 'Total Damage', subtitle = 'log2(Dollars)') +
+        ylab('') + xlab('Loss (Dollars) ')  + scale_x_log10() +
+  theme_solarized(light = T) +
+  scale_colour_solarized("red")
 
 ## HEALTH
 ### FATALITIES
@@ -97,7 +103,8 @@ Fatalities %>%
     ggplot(aes(y =EVTYPE, x= SUM)) +
       geom_point(color = 'darkred') +
       ylab('') + xlab('') + 
-      ggtitle('DEATHS BY EVENT') 
+      ggtitle('DEATHS BY EVENT') + scale_x_continuous(trans = 'log2')
+
 
 Injuries <-
   Wrangled_Data %>% 
@@ -111,4 +118,4 @@ Injuries %>%
     ggplot(aes(y =EVTYPE, x= SUM)) +
       geom_point(color = 'darkred') +
         ylab('') + xlab('') + 
-        ggtitle('INJUREDS BY EVENT') + scale_x_log10()
+        ggtitle('INJUREDS BY EVENT') + scale_x_continuous(trans = 'log2')
