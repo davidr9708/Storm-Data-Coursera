@@ -3,6 +3,7 @@ library(tidyverse)
 library(R.utils)
 library(lubridate)
 library(ggthemes)
+library(ggpubr)
 # File used
 ##Downloading 
 url <- 'https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2'
@@ -39,56 +40,64 @@ save(Wrangled_Data,file = 'Rdat/Wrangled_Data.rda')
 
 # Plotting
 ## COSTS
-### CROPS
+### DATA
 Crops <-
   Wrangled_Data %>% 
     group_by(EVTYPE) %>%
-    summarise(SUM = sum(CROPDMG), MEAN = mean(CROPDMG)) 
+    summarise(SUM = sum(CROPDMG), MEAN = mean(CROPDMG)) %>%
+      mutate(EVTYPE = reorder(EVTYPE, SUM, sum)) %>%  
+      arrange(desc(SUM)) %>%
+      filter(SUM > 0) 
 
-Crops%>%
-  mutate(EVTYPE = reorder(EVTYPE, SUM, sum)) %>%  
-  arrange(desc(SUM)) %>%
-  filter(SUM > 0) %>%
-      ggplot(aes(y =EVTYPE, x= SUM)) +
-        geom_point(color = 'green4') +
-          ylab('') + xlab('log10(Dollars)') + 
-        labs(title = 'CROPS DAMAGE') + 
-      scale_x_log10()+
-  theme_update() 
-
-
-## PROPERTIES
 Property <-
   Wrangled_Data %>% 
     group_by(EVTYPE) %>%
-    summarise(SUM = sum(PROPDMG), MEAN = mean(PROPDMG)) 
+    summarise(SUM = sum(PROPDMG), MEAN = mean(PROPDMG)) %>%
+      mutate(EVTYPE = reorder(EVTYPE, SUM, sum)) %>%  
+      arrange(desc(SUM)) %>%
+      filter(SUM > 0) 
 
-Property %>%
-  mutate(EVTYPE = reorder(EVTYPE, SUM, sum)) %>%  
-  arrange(desc(SUM)) %>%
-  filter(SUM > 0) %>%
-      ggplot(aes(y =EVTYPE, x= SUM)) +
-        geom_point(color = 'tan4') +
-            ylab('') + xlab('') + 
-            ggtitle('ECONOMICAL PROPERTIES LOSTS (USD) BY EVENT') + scale_x_log10()
-## TOTAL
 Total <-
   Wrangled_Data %>% 
     group_by(EVTYPE) %>%
     summarise(SUM = sum(TOTAL_ECONOMICAL_LOSTS), 
-              MEAN = mean(TOTAL_ECONOMICAL_LOSTS)) 
+              MEAN = mean(TOTAL_ECONOMICAL_LOSTS))  %>%
+      mutate(EVTYPE = reorder(EVTYPE, SUM, sum)) %>%  
+      arrange(desc(SUM)) %>%
+      filter(SUM > 0) 
 
-Total %>%
-  mutate(EVTYPE = reorder(EVTYPE, SUM, sum)) %>%  
-  arrange(desc(SUM))  %>%
-  filter(SUM > 0) %>%
+### PLOTS
+Crops_Plot <- 
+  Crops%>%
+    ggplot(aes(y =EVTYPE, x= SUM)) +
+    geom_point(color = 'green4') +
+       ylab('') + xlab('log10(Dollars)') + 
+      labs(title = 'Crops Damage') + 
+  scale_x_log10()+
+  theme_update() 
+
+
+Property_Plot <- 
+  Property %>%
+      ggplot(aes(y =EVTYPE, x= SUM)) +
+        geom_point(color = 'tan4') +
+            ylab('') + xlab('log10(Dollars)') + 
+  labs(title = 'Property Damage') +  scale_x_log10()
+
+
+Total_Plot <-
+  Total %>%
     ggplot(aes(y =EVTYPE, x= SUM)) +
       geom_point(color = 'darkred') +
-      labs(title = 'Total Damage', subtitle = 'log2(Dollars)') +
-        ylab('') + xlab('Loss (Dollars) ')  + scale_x_log10() +
-  theme_solarized(light = T) +
-  scale_colour_solarized("red")
+      labs(title = 'Total Damage') +
+        ylab('') + xlab('log10(Dollars) ')  + scale_x_log10() 
 
+##COMPLETED
+Final_Plot <-
+  ggarrange(Crops_Plot,Property_Plot, Total_Plot, ncol = 3)
+
+annotate_figure(Final_Plot,
+                top = text_grob('TOTAL ECONOMICAL DAMAGE BY EVENT \n(2007-2011)', face = "bold"))
 ## HEALTH
 ### FATALITIES
 Fatalities <-
